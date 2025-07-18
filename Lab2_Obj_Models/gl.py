@@ -5,7 +5,7 @@ LINES = 1
 TRIANGLES = 2
 
 def generate_random_color():
-    """Genera un color RGB aleatorio"""
+    #Genera un color RGB aleatorio
     return [random.random(), random.random(), random.random()]
 
 class Renderer(object):
@@ -24,6 +24,7 @@ class Renderer(object):
         self.activeVertexShader = None
 
         self.models = []
+        self.triangleColors = {}  # Diccionario para colores fijos
         
     #Es para el color del fondo de la pantalla
     def glClearColor(self, r, g, b):
@@ -349,9 +350,14 @@ class Renderer(object):
 			# Si son triangulos revisamos el buffer en saltos igual
 			# a 3 veces el Vertex Offset, porque cada trio corresponde
 			# a un triangulo. 
+            triangle_index = 0
             for i in range(0, len(buffer), vertexOffset * 3):
-                # Generar color aleatorio para cada triángulo
-                triangle_color = generate_random_color()
+                # Si no existe color para este triángulo, crear uno
+                if triangle_index not in self.triangleColors:
+                    self.triangleColors[triangle_index] = generate_random_color()
+                
+                # Usar el color fijo guardado
+                triangle_color = self.triangleColors[triangle_index]
                 original_color = self.currColor
                 self.currColor = triangle_color
                 
@@ -366,6 +372,7 @@ class Renderer(object):
                 
                 # Restaurar color original
                 self.currColor = original_color
+                triangle_index += 1
 
 
     
