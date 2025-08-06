@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def vertexShader(vertex, **kwargs):
     # Se lleva a cabo por vertice
 
@@ -150,23 +151,107 @@ def normalMapShader(**kwargs):
     
     return [r, g, b]
 
-
-def checkerboardShader(**kwargs):
-    #Shader que crea un patrón de tablero de ajedrez
+def hologramShader(**kwargs):
+    #Shader de holograma 
     A, B, C = kwargs["verts"]
     u, v, w = kwargs["bCoords"]
     
-    # Interpolar coordenadas X e Y
+    # Interpolar coordenadas del mundo
     x = u * A[0] + v * B[0] + w * C[0]
     y = u * A[1] + v * B[1] + w * C[1]
+    z = u * A[2] + v * B[2] + w * C[2]
     
-    # Crear patrón de tablero
-    frequency = 8.0
-    x_check = int((x + 1) * frequency) % 2
-    y_check = int((y + 1) * frequency) % 2
+    # Obtener normales interpoladas
+    nA = [A[3], A[4], A[5]]
+    nB = [B[3], B[4], B[5]]
+    nC = [C[3], C[4], C[5]]
     
-    # XOR para crear patrón alternante
-    if (x_check + y_check) % 2 == 0:
-        return [0.9, 0.9, 0.9]  # Gris claro
+    normal = [u * nA[0] + v * nB[0] + w * nC[0],
+              u * nA[1] + v * nB[1] + w * nC[1],
+              u * nA[2] + v * nB[2] + w * nC[2]]
+    
+    # Crear ondas con operaciones simples
+    wave1 = abs((y * 20) % 2 - 1)  # Onda triangular
+    wave2 = abs((z * 15) % 2 - 1)  # Otra onda triangular
+    interference = wave1 * wave2
+    
+    # Efecto fresnel simple (bordes brillantes)
+    fresnel = 1.0 - abs(normal[2])  # Usar componente Z de la normal
+    fresnel = fresnel * fresnel  # Cuadrático para más intensidad
+    
+    # Colores holográficos
+    r = 0.1 + interference * 0.3 + fresnel * 0.6
+    g = 0.7 + interference * 0.2 + fresnel * 0.3
+    b = 0.9 + interference * 0.1 + fresnel * 0.8
+    
+    # Líneas de escaneo
+    scanline = 0.8 + 0.2 * (abs((y * 30) % 2 - 1))
+    
+    return [min(r * scanline, 1.0), min(g * scanline, 1.0), min(b * scanline, 1.0)]
+
+def zebraShader(**kwargs):
+    #Shader de rayas de zebra dinámicas
+    A, B, C = kwargs["verts"]
+    u, v, w = kwargs["bCoords"]
+    
+    # Interpolar coordenadas
+    x = u * A[0] + v * B[0] + w * C[0]
+    y = u * A[1] + v * B[1] + w * C[1]
+    z = u * A[2] + v * B[2] + w * C[2]
+    
+    # Crear rayas curvas usando múltiples ondas
+    wave1 = (x * 8 + y * 2) % 2.0
+    wave2 = (x * 6 + z * 3 + 1.5) % 2.0
+    wave3 = (y * 10 + x * 1.5 + 0.7) % 2.0
+    
+    # Combinar ondas para crear patrones complejos
+    combined_wave = (wave1 + wave2 * 0.5 + wave3 * 0.3) / 1.8
+    
+    # Crear variación en el ancho de las rayas
+    stripe_width = 0.4 + abs(((x + z) * 5) % 2.0 - 1.0) * 0.3
+    
+    # Determinar si estoy en raya negra o blanca
+    stripe_pattern = combined_wave % 2.0
+    
+    if stripe_pattern < stripe_width:
+        return [0.05, 0.05, 0.05]  # Negro
     else:
-        return [0.1, 0.1, 0.1]  # Gris oscuro
+        return [0.95, 0.95, 0.9]   # Blanco cremoso
+    
+
+def bacteriaWaveShader(**kwargs):
+    #Shader que simula ondas de bacterias con colores verdes
+    A, B, C = kwargs["verts"]
+    u, v, w = kwargs["bCoords"]
+    
+    # Interpolar coordenadas
+    x = u * A[0] + v * B[0] + w * C[0]
+    y = u * A[1] + v * B[1] + w * C[1]
+    z = u * A[2] + v * B[2] + w * C[2]
+    
+    # Crear ondas de bacteria
+    wave1 = abs(((x * 5 + y * 3) % 2.0) - 1.0)
+    wave2 = abs(((y * 4 + z * 2 + 1.5) % 2.0) - 1.0)
+    wave3 = abs(((z * 6 + x * 2 + 0.8) % 2.0) - 1.0)
+    
+    # Combinar ondas
+    combined_wave = (wave1 + wave2 + wave3) / 3.0
+    
+    # Mapear a posición en el espectro de colores verde
+    rainbow_pos = combined_wave
+    
+    # Colores de bacteria s
+    if rainbow_pos < 0.167:  # Rojo
+        r, g, b = 1.0, 0.0, 0.0
+    elif rainbow_pos < 0.333:  # Naranja-Amarillo
+        r, g, b = 1.0, 0.8, 0.0
+    elif rainbow_pos < 0.5:  # Amarillo-Verde
+        r, g, b = 0.5, 1.0, 0.0
+    elif rainbow_pos < 0.667:  # Verde-Cyan
+        r, g, b = 0.0, 1.0, 0.5
+    elif rainbow_pos < 0.833:  # Cyan-Azul
+        r, g, b = 0.0, 0.5, 1.0
+    else:  # Azul-Violeta
+        r, g, b = 0.5, 0.0, 1.0
+    
+    return [r, g, b]

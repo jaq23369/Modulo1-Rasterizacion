@@ -2,7 +2,7 @@ import pygame
 from gl import *
 from BMP_Writer import GenerateBMP
 from model import Model
-from shaders import unlitShader, vertexShader, normalMapShader, checkerboardShader
+from shaders import unlitShader, vertexShader, normalMapShader, hologramShader, zebraShader, bacteriaWaveShader
 from Obj_Loader import OBJLoader
 
 width = 512
@@ -28,7 +28,7 @@ try:
     objModel.normals = obj_loader.getNormals() 
     objModel.texcoords = obj_loader.getTextureCoords()
     objModel.vertexShader = vertexShader
-    objModel.fragmentShader = normalMapShader 
+    objModel.fragmentShader = bacteriaWaveShader
     objModel.LoadTexture(texture_filename) 
     
     # Calcular transformaciones para centrar y escalar el modelo
